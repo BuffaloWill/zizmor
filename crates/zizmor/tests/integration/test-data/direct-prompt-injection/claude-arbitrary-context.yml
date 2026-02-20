@@ -1,0 +1,14 @@
+name: claude-arbitrary-context
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Review this: ${{ github.event.comment.body }}"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

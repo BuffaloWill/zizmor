@@ -1,0 +1,15 @@
+name: claude-gh-issue-list
+
+on: issues
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Run gh issue list and triage the open issues.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

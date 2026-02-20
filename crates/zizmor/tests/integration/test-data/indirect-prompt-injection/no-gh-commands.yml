@@ -1,0 +1,14 @@
+name: no-gh-commands
+
+on: push
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Summarize the changes in this pull request for the reviewer."
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

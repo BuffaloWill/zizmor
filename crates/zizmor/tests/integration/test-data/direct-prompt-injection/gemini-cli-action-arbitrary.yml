@@ -1,0 +1,13 @@
+name: gemini-cli-action-arbitrary
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-gemini/gemini-cli-action@v1
+        with:
+          prompt: "${{ github.event.comment.body }}"

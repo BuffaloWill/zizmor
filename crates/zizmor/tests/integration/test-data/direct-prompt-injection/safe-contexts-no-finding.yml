@@ -1,0 +1,17 @@
+name: safe-contexts-no-finding
+
+on: push
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Run ${{ github.run_id }} on ${{ github.sha }}"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      - uses: openai/codex-action@v1
+        with:
+          prompt: "Build for ${{ runner.os }}"

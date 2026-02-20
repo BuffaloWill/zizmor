@@ -1,0 +1,14 @@
+name: claude-direct-prompt-beta
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@beta
+        with:
+          direct_prompt: "${{ github.event.comment.body }}"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

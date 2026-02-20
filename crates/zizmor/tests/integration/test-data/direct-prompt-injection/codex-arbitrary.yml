@@ -1,0 +1,13 @@
+name: codex-arbitrary
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: openai/codex-action@v1
+        with:
+          prompt: "${{ github.event.issue.body }}"

@@ -1,0 +1,15 @@
+name: claude-gh-issue-view
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Please run gh issue view ${{ github.event.issue.number }} and summarize it.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

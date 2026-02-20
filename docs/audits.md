@@ -432,6 +432,52 @@ Some general pointers:
 
 [reusable workflow]: https://docs.github.com/en/actions/sharing-automations/reusing-workflows
 
+## `direct-prompt-injection`
+
+| Type     | Examples                          | Introduced in | Works offline  | Auto-fixes available | Configurable |
+|----------|-----------------------------------|---------------|----------------|--------------------| ---------------|
+| Workflow, Action  | [direct-prompt-injection.yml] | v1.X.0        | ✅             | ❌                 | ❌  |
+
+[direct-prompt-injection.yml]: https://github.com/zizmorcore/zizmor/blob/main/crates/zizmor/tests/integration/test-data/direct-prompt-injection/claude-arbitrary-context.yml
+
+Detects untrusted expression contexts interpolated into AI action prompt fields.
+
+AI-powered GitHub Actions (such as @anthropics/claude-code-action,
+@google-github-actions/run-gemini-cli, @openai/codex-action, and
+@google-gemini/gemini-cli-action) accept prompt inputs that are sent directly
+to large language models. When these prompt fields contain template expansions
+like `${{ github.event.issue.body }}`, an attacker can inject arbitrary
+instructions into the LLM prompt by crafting malicious issue or PR content.
+
+This audit checks both known AI actions (with high confidence) and any action
+with a `prompt:` or `direct_prompt:` input field (with medium confidence).
+
+### Remediation
+
+Avoid interpolating untrusted GitHub expression contexts directly into AI
+action prompt fields. Instead, pass untrusted data through environment
+variables or use the action's built-in mechanisms for reading issue/PR content.
+
+=== "Before :warning:"
+
+    ```yaml title="direct-prompt-injection.yml" hl_lines="5"
+    - uses: anthropics/claude-code-action@v1
+      with:
+        anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        prompt: |
+          Review this issue: ${{ github.event.issue.body }}
+    ```
+
+=== "After :white_check_mark:"
+
+    ```yaml title="direct-prompt-injection.yml" hl_lines="5"
+    - uses: anthropics/claude-code-action@v1
+      with:
+        anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        prompt: |
+          Review the issue that triggered this workflow.
+    ```
+
 ## `dependabot-cooldown`
 
 | Type     | Examples                | Introduced in | Works offline  | Auto-fixes available | Configurable |
@@ -813,6 +859,46 @@ values computed solely from trusted sources.
 
 If you need to pass state between steps, consider using `GITHUB_OUTPUT` instead.
 
+## `gemini-unrestricted-tools`
+
+| Type     | Examples                          | Introduced in | Works offline  | Auto-fixes available | Configurable |
+|----------|-----------------------------------|---------------|----------------|--------------------| ---------------|
+| Workflow, Action  | [gemini-unrestricted-tools.yml] | v1.X.0        | ✅             | ❌                 | ❌  |
+
+[gemini-unrestricted-tools.yml]: https://github.com/zizmorcore/zizmor/blob/main/crates/zizmor/tests/integration/test-data/gemini-unrestricted-tools/no-settings-run-gemini-cli.yml
+
+Detects Gemini CLI actions with unrestricted built-in tools.
+
+The @google-github-actions/run-gemini-cli and @google-gemini/gemini-cli-action
+actions run Google's Gemini CLI with access to built-in tools, including shell
+execution. By default, all built-in tools are enabled, which means the LLM can
+execute arbitrary shell commands on the runner.
+
+Users should explicitly restrict available tools via the `settings` (or
+`settings_json`) input by specifying a `tools.core` key, even if the
+restriction is an empty list.
+
+### Remediation
+
+Add a `settings` input with a `tools.core` key that explicitly lists only the
+built-in tools the Gemini CLI should have access to.
+
+=== "Before :warning:"
+
+    ```yaml title="gemini-unrestricted-tools.yml" hl_lines="1-3"
+    - uses: google-github-actions/run-gemini-cli@v1
+      with:
+        prompt: "Review this PR"
+    ```
+
+=== "After :white_check_mark:"
+
+    ```yaml title="gemini-unrestricted-tools.yml" hl_lines="3-4"
+    - uses: google-github-actions/run-gemini-cli@v1
+      with:
+        prompt: "Review this PR"
+        settings: '{"tools": {"core": []}}'
+    ```
 
 ## `hardcoded-container-credentials`
 
@@ -923,6 +1009,51 @@ the commit actually exists within it.
 
 The only remediation, once discovered, is to replace the impostor commit
 within an authentic commit (or an authentic tag/branch reference).
+
+## `indirect-prompt-injection`
+
+| Type     | Examples                            | Introduced in | Works offline  | Auto-fixes available | Configurable |
+|----------|-------------------------------------|---------------|----------------|--------------------| ---------------|
+| Workflow, Action  | [indirect-prompt-injection.yml] | v1.X.0        | ✅             | ❌                 | ❌  |
+
+[indirect-prompt-injection.yml]: https://github.com/zizmorcore/zizmor/blob/main/crates/zizmor/tests/integration/test-data/indirect-prompt-injection/claude-gh-issue-view.yml
+
+Detects AI action prompts that instruct the LLM to fetch attacker-controlled
+data via `gh` CLI commands.
+
+Even when a prompt does not contain direct template injection, it may still
+instruct the LLM to read attacker-controlled content. For example, a prompt
+that tells the AI to run `gh issue view` or `gh pr diff` causes the LLM to
+ingest issue bodies or PR diffs, which attackers can populate with malicious
+instructions.
+
+This audit scans the static text of prompt fields for known dangerous `gh` CLI
+subcommands: `gh issue view`, `gh pr view`, `gh pr diff`, `gh issue list`, and
+`gh pr list`.
+
+### Remediation
+
+Avoid instructing AI actions to read attacker-controlled content via `gh` CLI
+commands in the prompt. If the AI needs context about an issue or PR, use the
+action's built-in mechanisms or pre-filter the content.
+
+=== "Before :warning:"
+
+    ```yaml title="indirect-prompt-injection.yml" hl_lines="4"
+    - uses: anthropics/claude-code-action@v1
+      with:
+        anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        prompt: "Run `gh issue view ${{ github.event.issue.number }}` and summarize it"
+    ```
+
+=== "After :white_check_mark:"
+
+    ```yaml title="indirect-prompt-injection.yml" hl_lines="4"
+    - uses: anthropics/claude-code-action@v1
+      with:
+        anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        prompt: "Summarize the issue that triggered this workflow."
+    ```
 
 ## `insecure-commands`
 

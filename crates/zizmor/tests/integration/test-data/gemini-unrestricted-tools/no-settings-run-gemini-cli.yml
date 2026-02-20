@@ -1,0 +1,14 @@
+name: no-settings-run-gemini-cli
+
+on: push
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/run-gemini-cli@v1
+        with:
+          prompt: "Review this PR"
+          gemini_api_key: fake-key

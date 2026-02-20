@@ -78,6 +78,9 @@ impl AuditRegistry {
         register_audit!(audit::misfeature::Misfeature);
         register_audit!(audit::secrets_outside_env::SecretsOutsideEnvironment);
         register_audit!(audit::superfluous_actions::SuperfluousActions);
+        register_audit!(audit::gemini_unrestricted_tools::GeminiUnrestrictedTools);
+        register_audit!(audit::direct_prompt_injection::DirectPromptInjection);
+        register_audit!(audit::indirect_prompt_injection::IndirectPromptInjection);
 
         Ok(registry)
     }

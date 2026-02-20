@@ -9,11 +9,14 @@ mod concurrency_limits;
 // mod dangerous_triggers; // TODO
 mod dependabot_cooldown;
 mod dependabot_execution;
+mod direct_prompt_injection;
 mod excessive_permissions;
 mod forbidden_uses;
+mod gemini_unrestricted_tools;
 mod github_env;
 // mod hardcoded_container_credentials; // TODO
 mod impostor_commit;
+mod indirect_prompt_injection;
 mod insecure_commands;
 // mod known_vulnerable_actions; // TODO
 mod misfeature;

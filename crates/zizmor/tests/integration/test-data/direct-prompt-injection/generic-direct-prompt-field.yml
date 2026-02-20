@@ -1,0 +1,13 @@
+name: generic-direct-prompt-field
+
+on: issue_comment
+
+permissions: {}
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: another-org/custom-action@v2
+        with:
+          direct_prompt: "Process: ${{ github.event.comment.body }}"
